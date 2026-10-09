@@ -1,0 +1,783 @@
+/* =========================================================
+   Brasa Burger — style.css
+
+   Índice
+     1. Tema (variáveis claro/escuro)
+     2. Base
+     3. Topo e barra inferior
+     4. Início (informações, busca e categorias)
+     5. Cardápio (cards)
+     6. Contador − número + (carrinho e adicionais)
+     7. Carrinho (gaveta)
+     8. Janelas (produto, entrega, endereço e pagamento)
+     9. Botões e formulários
+    10. Avisos e animações
+    11. Responsivo
+   ========================================================= */
+
+
+/* =========================================================
+   1. Tema — para mudar cores, mexa só aqui
+   ========================================================= */
+
+:root {
+  color-scheme: light;
+  --accent: #d94635;
+  --accent-soft: #d946351a; /* fundo suave da opção selecionada */
+  --bg: #f6f6f4;
+  --fg: #171717;
+  --surface: #fff;          /* cards, gaveta, janelas */
+  --control: #fff;          /* botões e campos */
+  --muted: #777;
+  --faint: #999;
+  --line: #e7e7e4;
+  --line-soft: #eee;
+  --line-strong: #ddd;
+  --ink: #171717;           /* botões "escuros" (no tema escuro viram claros) */
+  --on-ink: #fff;
+  --glass: #ffffffeb;
+  --glass-strong: #fffffff2;
+  --danger: #b33;
+  --bad-fg: #c2362a;        /* texto "Fechado" */
+  --warn-fg: #8d5b00; --warn-bg: #fff8e7; --warn-line: #f0dfb1;
+  --ok-fg: #258c3e;   --ok-bg: #effaf1;   --ok-line: #ccebd2;
+  --shadow: #00000012;
+  --theme-ms: .45s;         /* duração da troca claro/escuro */
+  --roll-ms: .26s;          /* duração do número "rolando" (igual a ROLL_MS no app.js) */
+}
+
+:root.dark {
+  color-scheme: dark;
+  --accent-soft: #d9463530;
+  --bg: #111;
+  --fg: #f5f5f5;
+  --surface: #181818;
+  --control: #1c1c1c;
+  --muted: #999;
+  --faint: #7d7d7d;
+  --line: #2b2b2b;
+  --line-soft: #2b2b2b;
+  --line-strong: #333;
+  --ink: #f5f5f5;
+  --on-ink: #111;
+  --glass: #111e;
+  --glass-strong: #181818ef;
+  --danger: #ff7b7b;
+  --bad-fg: #ff7b6b;
+  --warn-fg: #e4b85e; --warn-bg: #2a2110; --warn-line: #55431c;
+  --ok-fg: #72cf8a;   --ok-bg: #17261b;   --ok-line: #285234;
+  --shadow: #00000066;
+}
+
+
+/* =========================================================
+   2. Base
+   ========================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+/* O fundo do site não deixa selecionar texto nem mostra cursor piscando;
+   os campos de digitação continuam normais. */
+html, body { -webkit-user-select: none; user-select: none; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  caret-color: transparent;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--theme-ms) ease, color var(--theme-ms) ease;
+}
+
+body.lock-scroll { overflow: hidden; }   /* página de fundo travada com gaveta/janela aberta */
+
+button { font-family: inherit; font-size: 13px; color: inherit; cursor: pointer; }
+
+input, textarea { -webkit-user-select: text; user-select: text; caret-color: var(--fg); }
+
+img { display: block; }
+img.imgError { opacity: 0; }   /* foto que não carregou: esconde o ícone de imagem quebrada */
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }  /* só aparece no teclado */
+
+/* Ícones: uma cor só (a do texto ao redor), então acompanham o tema claro/escuro */
+.ico {
+  width: 20px; height: 20px; flex: none;
+  fill: none; stroke: currentColor;
+  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+
+
+/* =========================================================
+   3. Topo e barra inferior
+   ========================================================= */
+
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  height: 70px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 0 clamp(18px, 5vw, 72px);
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+  transition: background-color var(--theme-ms), border-color var(--theme-ms);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.logo {
+  width: 38px; height: 38px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 11px;
+  background: var(--ink); color: var(--on-ink);
+  font-size: 11px; font-weight: 800;
+  transition: background-color var(--theme-ms), color var(--theme-ms);
+}
+
+.brandText { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.brandText > b { font-size: 15px; line-height: 1; }
+
+/* Aberto/Fechado: texto simples ao lado do nome, sem caixa */
+.status { display: flex; align-items: center; gap: 6px; font-size: 11px; line-height: 1; white-space: nowrap; }
+.status strong { color: var(--bad-fg); font-weight: 700; transition: color var(--theme-ms); }
+.status small { overflow: hidden; text-overflow: ellipsis; color: var(--muted); font-size: 11px; }
+.status.open strong { color: var(--ok-fg); }
+
+.statusDot {
+  --pulse: #d9463544;
+  flex: none;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.8s infinite;
+}
+.status.open .statusDot { --pulse: #28a74544; background: #28a745; }
+
+.actions { display: flex; flex: none; gap: 8px; }
+
+.icon, .cart {
+  position: relative;
+  width: 40px; height: 40px; padding: 0;
+  display: grid; place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--control);
+  transition: transform .2s, background-color var(--theme-ms), border-color var(--theme-ms), color var(--theme-ms);
+}
+.icon:hover, .cart:hover { transform: translateY(-1px); }
+
+.cart b {
+  position: absolute; right: -6px; top: -7px;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  display: grid; place-items: center;
+  border-radius: 20px;
+  background: var(--accent); color: #fff;
+  font-size: 10px;
+}
+
+/* Barra inferior fixa (início, pesquisa, pedidos) */
+.bottomNav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  height: 62px;
+  display: flex; justify-content: center; align-items: center; gap: 22px;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 25px #0000000c;
+  transition: background-color var(--theme-ms), border-color var(--theme-ms);
+}
+.bottomNav button {
+  width: 52px; height: 48px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; background: transparent;
+  transition: transform .2s ease, filter .2s ease;
+}
+.bottomNav .ico { width: 24px; height: 24px; }
+.bottomNav button:hover { transform: translateY(-2px); filter: brightness(.92); }
+.bottomNav button:active { transform: scale(.9); }
+
+
+/* =========================================================
+   4. Início (informações, busca e categorias)
+   ========================================================= */
+
+.infoStrip { max-width: 1120px; margin: auto; padding: 22px 24px 4px; display: flex; flex-wrap: wrap; gap: 9px; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px; line-height: 1.35;
+  transition: background-color var(--theme-ms), border-color var(--theme-ms), color var(--theme-ms);
+}
+.chip .ico { width: 17px; height: 17px; }
+.chip b { color: var(--fg); }
+
+.searchArea { max-width: 1120px; margin: auto; padding: 12px 24px 15px; }
+
+.searchBox {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color .25s, background-color var(--theme-ms);
+}
+.searchBox:focus-within { border-color: var(--accent); }
+.searchBox .ico { color: var(--faint); }
+.searchBox input {
+  flex: 1; min-width: 0; height: 46px;
+  border: 0; outline: 0; background: transparent;
+  -webkit-appearance: none; appearance: none;
+  color: inherit; font: inherit; font-size: 14px;
+}
+
+.cats {
+  max-width: 1120px; margin: auto; padding: 0 24px 24px;
+  display: flex; gap: 8px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.cats::-webkit-scrollbar { display: none; }
+.cats button {
+  padding: 10px 15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 99px;
+  background: var(--control); color: var(--muted);
+  white-space: nowrap;
+  transition: background-color .3s, color .3s, border-color .3s, transform .2s;
+}
+.cats button:hover { transform: translateY(-1px); }
+.cats button.active { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+
+
+/* =========================================================
+   5. Cardápio (cards)
+   Cada categoria é uma seção (título + grade). No computador as colunas se
+   ajustam à largura (2 ou 3); no celular são 2 colunas compactas.
+   ========================================================= */
+
+.menu { max-width: 1120px; margin: auto; padding: 0 24px 120px; }  /* espaço para a barra inferior */
+
+.catTitle {
+  margin: 30px 0 14px;
+  font-size: 14px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+}
+.menuSection:first-child .catTitle { margin-top: 8px; }
+
+.menuGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+
+.card {
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: transform .28s ease, box-shadow .28s ease, background-color var(--theme-ms), border-color var(--theme-ms);
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 14px 35px var(--shadow); }
+.card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--line-soft); }
+
+.cardBody { flex: 1; display: flex; flex-direction: column; padding: 16px; }
+.card h3 { margin: 0 0 6px; font-size: 16px; }
+.card p { margin: 0 0 14px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+.cardFoot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.price { font-size: 16px; font-weight: 800; }
+
+/* Botão "+" vermelho */
+.addMini {
+  width: 42px; height: 42px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; border-radius: 13px;
+  background: var(--accent); color: #fff;
+  box-shadow: 0 6px 16px #d9463544;
+  transition: transform .2s, filter .2s;
+}
+.addMini .ico { width: 22px; height: 22px; stroke-width: 2.2; }
+.addMini:hover { transform: scale(1.06); filter: brightness(1.05); }
+.addMini:active { transform: scale(.92); }
+
+.noResults { padding: 65px 20px; text-align: center; color: var(--muted); }
+.noResults .ico { display: block; width: 30px; height: 30px; margin: 0 auto 12px; }
+.noResults b { display: block; color: inherit; font-size: 14px; }
+.noResults p { margin: 6px 0 0; font-size: 12px; }
+
+
+/* =========================================================
+   6. Contador − número + (carrinho e adicionais)
+   O número fica dentro de .roll: ao mudar, o antigo sai e o novo entra
+   (ao somar, o número sobe e o próximo vem de baixo; ao tirar, desce e o próximo vem de cima).
+   ========================================================= */
+
+.stepper {
+  display: inline-flex; align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--control);
+}
+
+.stepBtn {
+  width: 34px; height: 34px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; background: transparent;
+  color: var(--fg);
+  transition: background-color .2s, color .2s, opacity .2s, transform .15s;
+}
+.stepBtn[data-step="1"] { color: var(--accent); }
+.stepBtn:hover:not(:disabled) { background: var(--line-soft); }
+.stepBtn:active:not(:disabled) { transform: scale(.85); }
+.stepBtn:disabled { opacity: .3; cursor: not-allowed; }
+.stepBtn .ico { width: 17px; height: 17px; stroke-width: 2.2; }
+
+.roll {
+  position: relative; overflow: hidden;
+  width: 30px; height: 34px;
+  text-align: center; font-size: 14px; font-weight: 700;
+  transition: color .2s;
+}
+.rollNum { display: block; line-height: 34px; }
+.rollNum.leaving { position: absolute; inset: 0; }
+
+.rollNum.in-up    { animation: rollInUp    var(--roll-ms) cubic-bezier(.22, .8, .25, 1) both; }
+.rollNum.out-up   { animation: rollOutUp   var(--roll-ms) cubic-bezier(.22, .8, .25, 1) both; }
+.rollNum.in-down  { animation: rollInDown  var(--roll-ms) cubic-bezier(.22, .8, .25, 1) both; }
+.rollNum.out-down { animation: rollOutDown var(--roll-ms) cubic-bezier(.22, .8, .25, 1) both; }
+
+@keyframes rollInUp    { from { transform: translateY(105%);  opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rollOutUp   { from { transform: none; opacity: 1; } to { transform: translateY(-105%); opacity: 0; } }
+@keyframes rollInDown  { from { transform: translateY(-105%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rollOutDown { from { transform: none; opacity: 1; } to { transform: translateY(105%);  opacity: 0; } }
+
+
+/* =========================================================
+   7. Carrinho (gaveta)
+   ========================================================= */
+
+.overlay {
+  position: fixed; inset: 0; z-index: 40;
+  background: #0007;
+  opacity: 0; pointer-events: none;
+  transition: opacity .38s ease;
+}
+.overlay.is-open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed; z-index: 50; top: 0; right: 0;
+  width: min(430px, 100%); height: 100%;
+  display: flex; flex-direction: column;
+  background: var(--surface);
+  box-shadow: -15px 0 50px #0002;
+  transform: translateX(100%);
+  touch-action: pan-y;  /* rolagem vertical normal; arrastar para a direita é tratado no app.js */
+  visibility: hidden;   /* fechada: some da tela e do teclado */
+  transition: transform .42s cubic-bezier(.22, .8, .25, 1), visibility 0s linear .42s, background-color var(--theme-ms);
+}
+.drawer.is-open { transform: none; visibility: visible; transition-delay: 0s; }
+/* Enquanto o dedo arrasta a gaveta, ela acompanha sem atraso */
+.drawer.dragging, .overlay.dragging { transition: none; }
+
+.drawerHead {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.drawerHead h2 { margin: 0; font-size: 20px; }
+.drawerHead small { display: block; margin-top: 4px; color: var(--faint); font-size: 11px; }
+
+.close, .modalClose, .modalBack {
+  width: 38px; height: 38px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%;
+  background: transparent; color: var(--muted);
+}
+.close { margin: -6px -8px 0 0; }
+
+.cartItems { flex: 1; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 8px 20px 16px; }  /* touch-action também aqui: esta lista rola, então o navegador não olha mais a gaveta */
+
+.cartRow {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.cartRow img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: var(--line-soft); }
+.cartInfo { min-width: 0; }
+.cartRow h4 { margin: 0 0 3px; font-size: 14px; }
+.cartRow small { display: block; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.cartPrice { display: block; margin-top: 4px; font-size: 13px; }
+
+.qty { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.remove {
+  height: 34px; padding: 0 12px;
+  border: 1px solid var(--line-strong); border-radius: 12px;
+  background: var(--control); color: var(--muted);
+  font-size: 12px;
+  transition: color .2s, border-color .2s;
+}
+.remove:hover { color: var(--danger); border-color: var(--danger); }
+
+.empty { padding: 45px 5px; text-align: center; color: var(--faint); font-size: 13px; line-height: 1.5; }
+
+.drawerFoot {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+.drawerFoot .primary { width: 100%; }
+.drawerFoot .link { width: auto; margin-top: 7px; }
+
+.minimumHint {
+  width: 100%; margin-bottom: 12px; padding: 8px 10px;
+  display: flex; justify-content: center; align-items: center; gap: 7px;
+  border: 1px solid var(--warn-line); border-radius: 10px;
+  background: var(--warn-bg); color: var(--warn-fg);
+  text-align: center; font-size: 12px;
+  transition: background-color .25s, color .25s, border-color .25s;
+}
+.minimumHint .ico { width: 16px; height: 16px; }
+.minimumHint.ok { background: var(--ok-bg); color: var(--ok-fg); border-color: var(--ok-line); }
+
+.total { width: 100%; display: flex; justify-content: space-between; margin-bottom: 14px; }
+
+
+/* =========================================================
+   8. Janelas (produto, entrega, endereço e pagamento)
+   Sobem de baixo no celular e aparecem no centro no computador.
+   ========================================================= */
+
+.modalBg {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: flex-end; justify-content: center;
+  background: #0008;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .3s ease, visibility 0s linear .45s;
+}
+.modalBg.is-open { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+
+.modal {
+  position: relative;
+  width: min(680px, 100%);
+  max-height: 94vh; max-height: 94dvh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  border-radius: 24px 24px 0 0;
+  background: var(--surface); color: inherit;
+  transform: translateY(105%);
+  transition: transform .45s cubic-bezier(.22, .8, .25, 1), opacity .3s ease, background-color var(--theme-ms);
+}
+.modalBg.is-open .modal { transform: none; }
+.modal.narrow { width: min(620px, 100%); }
+
+/* A rolagem fica aqui dentro; os botões × e voltar ficam fora dela e não saem do lugar. */
+.modalScroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+
+.modalClose, .modalBack {
+  position: absolute; z-index: 5; top: 10px;
+  background: var(--glass-strong);
+  backdrop-filter: blur(4px);
+}
+.modalClose { right: 12px; }
+.modalBack { left: 12px; }
+
+.modalBody { --pad: 22px; padding: var(--pad); }
+.modalBody.hasBack { padding-top: 58px; }   /* espaço para o botão voltar */
+.modalBody h2 { margin: 0 0 8px; font-size: 27px; letter-spacing: -.03em; }
+.tag { margin: 0 0 10px; color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .16em; }
+.muted { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+/* Detalhe do produto: foto grande e uma "ficha" que sobe por cima dela */
+.productModal { background: transparent; }
+.productHero { position: relative; height: 350px; overflow: hidden; background: #111; }
+.productHero img { width: 100%; height: 100%; object-fit: cover; }
+.productModal .modalClose { top: 14px; right: 14px; }
+
+.productSheet {
+  position: relative; z-index: 2;
+  min-height: 300px; margin-top: -42px;
+  border-radius: 28px 28px 0 0;
+  background: var(--surface);          /* sem sombra nem degradê: a foto aparece limpa até a borda da ficha */
+  transition: background-color var(--theme-ms);
+}
+
+/* Grupos de opções */
+.group { padding: 17px 0; border-top: 1px solid var(--line-soft); }
+.groupTitle { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.groupTitle strong { font-size: 14px; }
+.groupTitle span { color: var(--faint); font-size: 11px; }
+.groupTitle span.required { color: var(--muted); font-weight: 600; }
+.group.error .groupTitle span { color: var(--accent); }
+
+.option { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 46px; padding: 6px 0; font-size: 14px; cursor: pointer; }
+div.option { cursor: default; }
+.optName { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.optName em { color: var(--muted); font-size: 12px; font-style: normal; }
+.option.has .roll { color: var(--accent); }
+
+/* Caixa de marcar e botão de escolher 1, no mesmo estilo do resto do site */
+.option input {
+  -webkit-appearance: none; appearance: none;
+  flex: none; display: grid; place-items: center;
+  width: 24px; height: 24px; margin: 0;
+  border: 1.5px solid var(--line-strong); border-radius: 8px;
+  background: var(--control);
+  cursor: pointer;
+  transition: background-color .2s, border-color .2s;
+}
+.option input[type="radio"] { border-radius: 50%; }
+.option input:checked { background: var(--accent); border-color: var(--accent); }
+.option input[type="checkbox"]:checked::after {
+  content: ""; width: 10px; height: 5px; margin-top: -2px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+}
+.option input[type="radio"]:checked::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+
+/* Barra "Total + Adicionar" colada no fim da janela */
+.modalBottom {
+  position: sticky; bottom: 0;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  margin: 0 calc(var(--pad) * -1) calc(var(--pad) * -1);
+  padding: 14px var(--pad) var(--pad);
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface);
+  transition: background-color var(--theme-ms), border-color var(--theme-ms);
+}
+.modalBottom small { display: block; color: var(--faint); font-size: 11px; }
+.modalBottom b { font-size: 20px; }
+
+/* Entrega ou retirada */
+.choices { display: grid; gap: 10px; margin: 20px 0; }
+
+.choice {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px;
+  width: 100%; padding: 14px;
+  border: 1.5px solid var(--line-strong); border-radius: 16px;
+  background: var(--control);
+  text-align: left;
+  transition: border-color .25s, background-color .25s, transform .2s;
+}
+.choice:hover { transform: translateY(-1px); }
+.choice:active { transform: scale(.99); }
+.choice.selected { border-color: var(--accent); background: var(--accent-soft); }
+
+.choiceIcon {
+  width: 46px; height: 46px;
+  display: grid; place-items: center;
+  border-radius: 13px;
+  background: var(--line-soft); color: var(--muted);
+  transition: background-color .25s, color .25s;
+}
+.choiceIcon .ico { width: 24px; height: 24px; }
+.choice.selected .choiceIcon { background: var(--accent); color: #fff; }
+
+.choiceText b { display: block; font-size: 15px; }
+.choiceText small { display: block; margin-top: 3px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.choicePrice { font-size: 13px; font-weight: 800; white-space: nowrap; }
+.choicePrice.free { color: var(--ok-fg); }
+
+/* Pagamento: onde receber, resumo e Pix */
+.where {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 16px 0; padding: 14px;
+  border: 1px solid var(--line); border-radius: 14px;
+}
+.whereIcon {
+  width: 40px; height: 40px; flex: none;
+  display: grid; place-items: center;
+  border-radius: 12px;
+  background: var(--accent-soft); color: var(--accent);
+}
+.whereText { flex: 1; min-width: 0; font-size: 13px; line-height: 1.45; }
+.whereText small { display: block; margin-bottom: 2px; color: var(--faint); font-size: 11px; }
+.whereText b { display: block; }
+.whereText span { display: block; color: var(--muted); }
+.textBtn { padding: 4px 0; border: 0; background: none; color: var(--accent); font-weight: 700; }
+
+.summary { margin: 14px 0; }
+.sumHead { padding-bottom: 8px; border-bottom: 1px solid var(--line-soft); }
+.sumItem { padding: 8px 0; border-bottom: 1px dashed var(--line-soft); }
+.sumLine { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; font-size: 13px; }
+.sumLine.sub { padding-left: 12px; color: var(--muted); font-size: 12px; }
+.sumTotals { margin-top: 10px; }
+.sumLine.free b { color: var(--ok-fg); }
+.sumLine.grand { margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--line-soft); font-size: 17px; font-weight: 800; }
+
+.pix { margin: 17px 0; padding: 14px; border: 1px dashed var(--line-strong); border-radius: 14px; }
+.pix small { display: block; margin-bottom: 6px; color: var(--faint); font-size: 11px; }
+.pix b { display: block; word-break: break-all; font-size: 13px; }
+.copy { padding: 7px 0; border: 0; background: none; color: var(--accent); font-weight: 700; }
+
+
+/* =========================================================
+   9. Botões e formulários
+   ========================================================= */
+
+.primary {
+  padding: 13px 16px;
+  border: 0; border-radius: 12px;
+  background: var(--accent); color: #fff;
+  font-weight: 800;
+  transition: transform .2s, filter .2s, opacity .2s;
+}
+.primary:hover { transform: translateY(-1px); filter: brightness(1.04); }
+.primary:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; }
+.primary.full { width: 100%; }
+
+.link { width: 100%; padding: 11px; border: 0; background: none; color: var(--muted); }
+
+.field { display: block; margin: 12px 0; font-size: 12px; font-weight: 700; }
+.field em { color: var(--faint); font-style: normal; font-weight: 400; }
+.field input, .field textarea {
+  display: block; width: 100%; margin-top: 6px; padding: 12px;
+  border: 1px solid var(--line-strong); border-radius: 10px;
+  background: transparent; color: inherit;
+  font-family: inherit; font-size: 16px; font-weight: 400;  /* 16px evita o zoom automático do iPhone */
+  outline: none;
+  transition: border-color .2s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { min-height: 75px; resize: vertical; }
+.field.invalid input { border-color: var(--danger); }
+.field.invalid::after { content: "Campo obrigatório"; display: block; margin-top: 5px; color: var(--danger); font-size: 11px; font-weight: 600; }
+
+.hint { display: block; min-height: 15px; margin-top: 6px; color: var(--muted); font-size: 11px; font-weight: 500; }
+.hint.ok { color: var(--ok-fg); }
+.hint.warn { color: var(--warn-fg); }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.row2.cityRow { grid-template-columns: 1fr 88px; }
+
+.tiny { margin: 10px 0 0; text-align: center; color: var(--faint); font-size: 11px; line-height: 1.5; }
+
+
+/* =========================================================
+   10. Avisos e animações
+   ========================================================= */
+
+#toast {
+  position: fixed; z-index: 130; bottom: 80px; left: 50%;
+  padding: 11px 15px;
+  border-radius: 11px;
+  background: var(--ink); color: var(--on-ink);
+  font-size: 12px;
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, 20px);
+  transition: opacity .25s, transform .25s;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Bolinha que voa até o carrinho. A posição é animada pelo app.js (em arco);
+   a duração está em FLY_MS no app.js. */
+.flyDot {
+  position: fixed; left: 0; top: 0; z-index: 120;
+  width: 22px; height: 22px; margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9a88, var(--accent) 62%);
+  box-shadow: 0 0 0 5px #d9463530, 0 8px 22px #d9463599;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Rastro que a bolinha vai deixando para trás */
+.flyTrail {
+  position: fixed; left: 0; top: 0; z-index: 119;
+  width: 12px; height: 12px; margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  pointer-events: none;
+  animation: trail .55s ease-out forwards;
+}
+@keyframes trail {
+  from { opacity: .55; transform: translate3d(var(--x), var(--y), 0) scale(1); }
+  to   { opacity: 0;   transform: translate3d(var(--x), var(--y), 0) scale(.15); }
+}
+
+/* Chegada no carrinho: o botão dá um pulo, ganha um anel e o número "estoura" */
+.cart.bump { animation: bump .45s cubic-bezier(.3, 1.6, .5, 1); }
+.cart.bump::after {
+  content: ""; position: absolute; inset: -2px;
+  border: 2px solid var(--accent); border-radius: 14px;
+  pointer-events: none;
+  animation: ring .55s ease-out forwards;
+}
+.cart.bump b { animation: badgePop .45s cubic-bezier(.3, 1.8, .5, 1); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--pulse); }
+  50% { box-shadow: 0 0 0 7px transparent; }
+}
+@keyframes bump {
+  0%, 100% { transform: scale(1); }
+  35% { transform: scale(1.22); }
+}
+@keyframes ring {
+  from { opacity: .9; transform: scale(1); }
+  to   { opacity: 0;  transform: scale(1.7); }
+}
+@keyframes badgePop {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.5); }
+}
+
+/* Respeita quem pede menos movimento no aparelho */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* =========================================================
+   11. Responsivo
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .infoStrip { flex-direction: column; align-items: stretch; padding-top: 18px; }
+  .chip { width: 100%; }
+
+  /* Margens laterais menores para sobrar espaço aos cards */
+  .infoStrip, .searchArea, .cats, .menu { padding-left: 16px; padding-right: 16px; }
+
+  /* Cardápio em 2 colunas, com cards compactos: cabem 4 produtos na tela */
+  .catTitle { margin: 22px 2px 10px; font-size: 13px; }
+  .menuGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .card { border-radius: 16px; }
+  .card img { aspect-ratio: 1 / 1; }             /* imagem quadrada: corta menos a foto */
+  .cardBody { padding: 10px 10px 11px; }
+  .card h3, .card p { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .card h3 { -webkit-line-clamp: 2; line-clamp: 2; margin: 0 0 3px; font-size: 14px; line-height: 1.25; }
+  .card p { -webkit-line-clamp: 2; line-clamp: 2; margin: 0 0 9px; font-size: 11px; line-height: 1.35; }
+  .price { font-size: 14px; }
+  .addMini { width: 36px; height: 36px; border-radius: 11px; }
+  .addMini .ico { width: 19px; height: 19px; }
+
+  .cartRow { grid-template-columns: 58px minmax(0, 1fr); }
+  .cartRow img { width: 58px; height: 58px; }
+
+  .modal { max-height: 92vh; max-height: 92dvh; }
+  .modalBody { --pad: 18px; }
+  .productHero { height: 310px; }
+}
+
+/* Celulares: 16px nos campos evita o zoom automático ao digitar */
+@media (pointer: coarse) {
+  .searchBox input { font-size: 16px; }
+}
+
+/* Computador: janela no centro da tela, com leve zoom ao abrir */
+@media (min-width: 701px) {
+  .modalBg { align-items: center; padding: 18px; }
+  .modal { border-radius: 24px; opacity: .85; transform: translateY(55px) scale(.98); }
+  .modalBg.is-open .modal { opacity: 1; transform: none; }
+}

@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Cardápio digital da Brasa Burger: hambúrgueres, combos, porções, bebidas e sobremesas.">
+<title>Brasa Burger — Cardápio</title>
+
+<!-- Aplica o tema salvo antes da página aparecer (evita piscar de claro para escuro) -->
+<script>
+  try {
+    var savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark" || (!savedTheme && matchMedia("(prefers-color-scheme: dark)").matches)) {
+      document.documentElement.classList.add("dark");
+    }
+  } catch (e) {}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= Ícones =================
+     Formas simples de uma cor só. Elas usam a cor do texto ao redor (currentColor),
+     então acompanham sozinhas o tema claro/escuro. Uso: <svg class="ico"><use href="#i-nome"/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2.3l2.1 10.2a1.6 1.6 0 0 0 1.6 1.3h8.3a1.6 1.6 0 0 0 1.6-1.2L20.5 8H6"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></symbol>
+  <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5"/><path d="m11 6-6 6 6 6"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2.5 6h11v10h-11z"/><path d="M13.5 9.5h4l3 3.2V16h-7"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/></symbol>
+  <symbol id="i-store" viewBox="0 0 24 24"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5a2.67 2.67 0 0 0 5.33 0 2.67 2.67 0 0 0 5.34 0 2.67 2.67 0 0 0 5.33 0"/><path d="M5 12.5V20h14v-7.5"/></symbol>
+</svg>
+
+<!-- ================= Topo ================= -->
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">BB</div>
+    <div class="brandText">
+      <b>Brasa Burger</b>
+      <!-- Aberto/Fechado (o horário vem do dados.js) -->
+      <div class="status" id="statusCard" role="status">
+        <span class="statusDot"></span><strong id="statusText">Fechado</strong><small id="statusHours"></small>
+      </div>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="themeBtn" class="icon" type="button" aria-label="Alternar tema claro/escuro"><svg class="ico" aria-hidden="true"><use href="#i-moon"/></svg></button>
+    <button id="cartBtn" class="cart" type="button" aria-label="Abrir carrinho"><svg class="ico" aria-hidden="true"><use href="#i-cart"/></svg><b id="cartCount">0</b></button>
+  </div>
+</header>
+
+<!-- ================= Página principal ================= -->
+<main id="home">
+  <section class="infoStrip" aria-label="Informações da loja">
+    <span class="chip"><svg class="ico" aria-hidden="true"><use href="#i-bag"/></svg><span>Pedido mínimo: <b id="minOrder"></b></span></span>
+    <span class="chip"><svg class="ico" aria-hidden="true"><use href="#i-pin"/></svg><span id="address"></span></span>
+  </section>
+
+  <section class="searchArea">
+    <label class="searchBox">
+      <svg class="ico" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="search" type="search" placeholder="Buscar no cardápio..." autocomplete="off" aria-label="Buscar no cardápio">
+    </label>
+  </section>
+
+  <nav id="cats" class="cats" aria-label="Categorias"></nav>
+  <section id="menu" class="menu" aria-live="polite"></section>
+</main>
+
+<!-- ================= Carrinho (gaveta lateral) ================= -->
+<div id="overlay" class="overlay"></div>
+<aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <div class="drawerHead">
+    <div>
+      <h2 id="drawerTitle">Seu pedido</h2>
+      <small>Revise seus itens antes de continuar</small>
+    </div>
+    <button class="close" type="button" data-close aria-label="Fechar carrinho"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+  </div>
+
+  <div id="cartItems" class="cartItems"></div>
+
+  <div class="drawerFoot">
+    <div id="minimumHint" class="minimumHint"></div>
+    <div class="total"><span>Subtotal</span><b id="cartTotal">R$ 0,00</b></div>
+    <button id="checkout" class="primary" type="button">Prosseguir para pagamento</button>
+    <button id="clearCart" class="link" type="button">Limpar carrinho</button>
+  </div>
+</aside>
+
+<!-- ================= Barra inferior fixa ================= -->
+<nav class="bottomNav" aria-label="Navegação principal">
+  <button id="homeNav" type="button" aria-label="Início" title="Início"><svg class="ico" aria-hidden="true"><use href="#i-home"/></svg></button>
+  <button id="searchNav" type="button" aria-label="Pesquisar" title="Pesquisar"><svg class="ico" aria-hidden="true"><use href="#i-search"/></svg></button>
+  <button id="ordersNav" type="button" aria-label="Pedidos" title="Pedidos"><svg class="ico" aria-hidden="true"><use href="#i-cart"/></svg></button>
+</nav>
+
+<!-- ================= Janela: detalhe do produto ================= -->
+<div id="productModal" class="modalBg" role="dialog" aria-modal="true" aria-labelledby="pName">
+  <div class="modal productModal">
+    <button class="modalClose" type="button" data-close aria-label="Fechar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="modalScroll">
+      <div class="productHero">
+        <img id="pImg" alt="">
+      </div>
+      <div class="modalBody productSheet">
+        <p id="pCat" class="tag"></p>
+        <h2 id="pName"></h2>
+        <p id="pDesc" class="muted"></p>
+        <div id="options"></div>
+        <div class="modalBottom">
+          <div><small>Total</small><b id="pTotal"></b></div>
+          <button id="add" class="primary" type="button">Adicionar ao carrinho</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Janela: entrega ou retirada ================= -->
+<div id="modeModal" class="modalBg" role="dialog" aria-modal="true" aria-labelledby="modeTitle">
+  <div class="modal narrow">
+    <button class="modalBack" type="button" data-back aria-label="Voltar"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button>
+    <button class="modalClose" type="button" data-close aria-label="Fechar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="modalScroll">
+      <div class="modalBody hasBack">
+        <p class="tag">RECEBIMENTO</p>
+        <h2 id="modeTitle">Como você quer receber?</h2>
+        <p class="muted">Escolha a entrega no seu endereço ou retire o pedido na hamburgueria.</p>
+
+        <div class="choices" role="radiogroup" aria-label="Forma de recebimento">
+          <button type="button" class="choice" role="radio" aria-checked="false" data-mode="delivery">
+            <span class="choiceIcon"><svg class="ico" aria-hidden="true"><use href="#i-truck"/></svg></span>
+            <span class="choiceText"><b>Entrega</b><small>Levamos até o seu endereço</small></span>
+            <span class="choicePrice" id="deliveryFee"></span>
+          </button>
+          <button type="button" class="choice" role="radio" aria-checked="false" data-mode="pickup">
+            <span class="choiceIcon"><svg class="ico" aria-hidden="true"><use href="#i-store"/></svg></span>
+            <span class="choiceText"><b>Retirada</b><small id="pickupAddress"></small></span>
+            <span class="choicePrice free">Grátis</span>
+          </button>
+        </div>
+
+        <button id="modeNext" class="primary full" type="button" disabled>Continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Janela: endereço de entrega ================= -->
+<div id="addressModal" class="modalBg" role="dialog" aria-modal="true" aria-labelledby="addressTitle">
+  <div class="modal narrow">
+    <button class="modalBack" type="button" data-back aria-label="Voltar"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button>
+    <button class="modalClose" type="button" data-close aria-label="Fechar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="modalScroll">
+      <form id="addressForm" class="modalBody hasBack" novalidate>
+        <p class="tag">ENTREGA</p>
+        <h2 id="addressTitle">Confirme o endereço</h2>
+        <p class="muted">Digite o CEP e preenchemos o resto. Confira os dados e informe o número.</p>
+
+        <label class="field">CEP
+          <input name="cep" inputmode="numeric" autocomplete="postal-code" maxlength="9" placeholder="00000-000">
+          <small id="cepHint" class="hint" aria-live="polite"></small>
+        </label>
+        <label class="field">Endereço
+          <input name="street" autocomplete="address-line1" placeholder="Rua, avenida...">
+        </label>
+        <div class="row2">
+          <label class="field">Número
+            <input name="number" autocomplete="off" placeholder="Ex.: 123 ou S/N">
+          </label>
+          <label class="field">Complemento <em>(opcional)</em>
+            <input name="complement" autocomplete="address-line2" placeholder="Apto, bloco...">
+          </label>
+        </div>
+        <label class="field">Bairro
+          <input name="district" autocomplete="off">
+        </label>
+        <div class="row2 cityRow">
+          <label class="field">Cidade
+            <input name="city" autocomplete="address-level2">
+          </label>
+          <label class="field">UF
+            <input name="uf" autocomplete="address-level1" maxlength="2" placeholder="RJ">
+          </label>
+        </div>
+        <label class="field">Ponto de referência <em>(opcional)</em>
+          <input name="reference" autocomplete="off" placeholder="Ex.: ao lado da padaria">
+        </label>
+
+        <button class="primary full" type="submit">Continuar para o pagamento</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Janela: pagamento ================= -->
+<div id="payModal" class="modalBg" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+  <div class="modal narrow">
+    <button class="modalBack" type="button" data-back aria-label="Voltar"><svg class="ico" aria-hidden="true"><use href="#i-back"/></svg></button>
+    <button class="modalClose" type="button" data-close aria-label="Fechar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="modalScroll">
+      <div class="modalBody hasBack">
+        <p class="tag">PAGAMENTO</p>
+        <h2 id="payTitle">Finalize seu pedido</h2>
+        <p class="muted">Confira o resumo, faça o Pix com a chave abaixo e envie o comprovante pelo WhatsApp da hamburgueria.</p>
+
+        <div id="payWhere" class="where"></div>
+
+        <div class="summary">
+          <div class="sumHead"><b>Resumo do pedido</b></div>
+          <div id="payItems"></div>
+          <div class="sumTotals">
+            <div class="sumLine"><span>Subtotal</span><b id="paySubtotal"></b></div>
+            <div id="payFeeRow" class="sumLine"><span id="payFeeLabel"></span><b id="payFee"></b></div>
+            <div class="sumLine grand"><span>Total a pagar</span><b id="payTotal"></b></div>
+          </div>
+        </div>
+
+        <div class="pix">
+          <small>Chave Pix</small>
+          <b id="pix"></b>
+          <button id="copyPix" class="copy" type="button">Copiar chave</button>
+        </div>
+
+        <label class="field">Seu nome
+          <input id="customer" placeholder="Nome para identificar o pedido" autocomplete="name">
+        </label>
+        <label class="field">Observação <em>(opcional)</em>
+          <textarea id="note" placeholder="Ex.: sem cebola, entregar na portaria..."></textarea>
+        </label>
+
+        <button id="sendWhats" class="primary full" type="button">Paguei — enviar pedido e comprovante</button>
+        <p class="tiny">O pagamento é confirmado manualmente pelo estabelecimento.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<noscript><p style="padding:24px;text-align:center">Ative o JavaScript para ver o cardápio.</p></noscript>
+
+<script src="dados.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
