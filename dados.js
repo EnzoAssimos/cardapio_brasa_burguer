@@ -8,7 +8,7 @@
 const CONFIG = {
   storeName: "Brasa Burger",
   pixKey: "pix@brasaburger.exemplo",   // TROQUE pela chave Pix real
-  whatsapp: "5521972522280",           // TROQUE: DDI + DDD + número, só dígitos
+  whatsapp: "5521900000000",           // TROQUE: DDI + DDD + número, só dígitos
   address: "Rua Montenegro, 555 — Brás Pina, Rio de Janeiro — RJ, 10107-000", // endereço fictício (retirada no balcão)
   minOrder: 20,                        // pedido mínimo, em reais
   deliveryFee: 5,                      // taxa de entrega, em reais (0 = entrega grátis)
