@@ -1,5 +1,21 @@
 # Brasa Burger — Cardápio digital
 
+🔗 **Ver o site:** https://enzoassimos.github.io/cardapio_brasa_burguer/
+
+Cardápio digital de hamburgueria (loja fictícia) com pedido completo pelo celular.
+
+**Destaques**
+- Carrinho com adicionais, contador e pedido mínimo
+- Entrega ou retirada, com taxa calculada no total
+- Endereço preenchido sozinho pelo CEP (ViaCEP)
+- Pagamento via Pix e pedido enviado pronto pelo WhatsApp
+- Tema claro e escuro, layout pensado para celular
+
+**Tecnologias:** HTML, CSS e JavaScript puro
+
+---
+
+
 Site estático (HTML, CSS e JavaScript puros, sem instalar nada). Para ver, basta abrir o `index.html` no navegador.
 
 ## Arquivos
